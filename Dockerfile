@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/go:1.24-bookworm AS builder
+FROM mcr.microsoft.com/devcontainers/go:2-1-bookworm AS builder
 LABEL AUTHOR=cedricve
 
 ENV GOROOT=/usr/local/go
