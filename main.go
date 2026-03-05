@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	cryptorand "crypto/rand"
 	"log"
 	"math/rand"
 	"os"
@@ -17,6 +18,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type APIResponse struct {
@@ -63,7 +65,7 @@ func main() {
 
 	createFixedHandler := func(endpoint string, steps []traceStep, payload func(*rand.Rand) map[string]any) gin.HandlerFunc {
 		return func(c *gin.Context) {
-			ctx, span := tracer.Start(c.Request.Context(), endpoint)
+			ctx, span := tracer.Start(contextWithParent(c), endpoint)
 			defer span.End()
 
 			totalDelay := time.Duration(0)
@@ -215,4 +217,52 @@ func initTracer(ctx context.Context, serviceName string) (func(context.Context) 
 	)
 
 	return tracerProvider.Shutdown, nil
+}
+
+func contextWithParent(c *gin.Context) context.Context {
+	ctx := c.Request.Context()
+	if trace.SpanContextFromContext(ctx).IsValid() {
+		return ctx
+	}
+
+	traceIDHex := c.Query("trace_id")
+	if traceIDHex == "" {
+		return ctx
+	}
+
+	traceID, err := trace.TraceIDFromHex(traceIDHex)
+	if err != nil {
+		return ctx
+	}
+
+	spanIDHex := c.Query("parent_span_id")
+	spanID, err := spanIDFromHexOrRandom(spanIDHex)
+	if err != nil {
+		return ctx
+	}
+
+	parent := trace.NewSpanContext(trace.SpanContextConfig{
+		TraceID:    traceID,
+		SpanID:     spanID,
+		TraceFlags: trace.FlagsSampled,
+		Remote:     true,
+	})
+
+	return trace.ContextWithSpanContext(ctx, parent)
+}
+
+func spanIDFromHexOrRandom(hexValue string) (trace.SpanID, error) {
+	if hexValue != "" {
+		return trace.SpanIDFromHex(hexValue)
+	}
+
+	for i := 0; i < 2; i++ {
+		var spanID trace.SpanID
+		_, _ = cryptorand.Read(spanID[:])
+		if spanID.IsValid() {
+			return spanID, nil
+		}
+	}
+
+	return trace.SpanID{}, nil
 }

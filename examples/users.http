@@ -3,3 +3,7 @@
 ### Get user profile
 GET {{baseUrl}}/api/users/123
 Accept: application/json
+
+### Get user profile with trace reuse
+GET {{baseUrl}}/api/users/123?trace_id=4bf92f3577b34da6a3ce929d0e0e4736&parent_span_id=00f067aa0ba902b7
+Accept: application/json

@@ -22,6 +22,8 @@ Each endpoint produces a consistent total delay (sum of its internal steps):
 
 Responses include `delay_ms` and `trace_id` to make it easy to locate the trace for a given request.
 
+If you want to reuse an existing trace, pass a standard `traceparent` header. For quick demos, you can also pass `trace_id` and an optional `parent_span_id` as query parameters.
+
 ## OpenTelemetry configuration
 
 Tracing is enabled by default and uses the OTLP HTTP exporter.
