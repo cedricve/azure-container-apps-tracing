@@ -1,0 +1,10 @@
+{
+    "git.autofetch": true,
+    "git.enableSmartCommit": true,
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+        {
+            "type": "text",
+            "value": "Always start a commit with (feature), (fix), (docs), (style), (refactor), (perf), (test), (chore) or (ci) to indicate the type of change. For example: (feature) ... commit message. Use the most filename with most changes and make it more natural e.g. (feature - livestream) Added HD viewing or (bug - settings) This is a fix.. "
+        },
+    ]
+}

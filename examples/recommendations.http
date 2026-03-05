@@ -1,0 +1,5 @@
+@baseUrl = http://localhost:8081
+
+### Get recommendations
+GET {{baseUrl}}/api/recommendations?user_id=123
+Accept: application/json

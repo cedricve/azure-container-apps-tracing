@@ -1,0 +1,21 @@
+@baseUrl = http://localhost:8081
+
+### Checkout
+POST {{baseUrl}}/api/checkout
+Content-Type: application/json
+Accept: application/json
+
+{
+  "cart_id": "cart-123",
+  "payment_method": "visa",
+  "items": [
+    {
+      "sku": "laptop-001",
+      "qty": 1
+    },
+    {
+      "sku": "mouse-002",
+      "qty": 2
+    }
+  ]
+}

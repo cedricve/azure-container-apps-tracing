@@ -1,0 +1,5 @@
+@baseUrl = http://localhost:8081
+
+### Get order details
+GET {{baseUrl}}/api/orders/456
+Accept: application/json
