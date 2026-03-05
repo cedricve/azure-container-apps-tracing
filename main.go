@@ -41,7 +41,7 @@ func main() {
 		log.Printf("Warning: Error loading .env.local file: %v", err)
 	}
 
-	serviceName := getEnv("SERVICE_NAME", "slow-api")
+	serviceName := getEnv("SERVICE_NAME", "aca-tracer")
 
 	shutdown, err := initTracer(context.Background(), serviceName)
 	if err != nil {
@@ -59,7 +59,7 @@ func main() {
 	router := gin.Default()
 	router.Use(otelgin.Middleware(serviceName))
 
-	tracer := otel.Tracer("slow-api")
+	tracer := otel.Tracer("aca-tracer")
 
 	createFixedHandler := func(endpoint string, steps []traceStep, payload func(*rand.Rand) map[string]any) gin.HandlerFunc {
 		return func(c *gin.Context) {

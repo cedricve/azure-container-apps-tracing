@@ -5,7 +5,7 @@ ENV GOROOT=/usr/local/go
 ENV GOPATH=/go
 ENV PATH=$GOPATH/bin:$GOROOT/bin:/usr/local/lib:$PATH
 ENV GOSUMDB=off
-ENV REPO_PATH=cedricve/slow-api
+ENV REPO_PATH=cedricve/aca-tracer
 
 ##############################################################################
 # Copy all the relevant source code in the Docker image, so we can build this.

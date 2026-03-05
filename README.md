@@ -24,14 +24,31 @@ Responses include `delay_ms` and `trace_id` to make it easy to locate the trace 
 
 ## OpenTelemetry configuration
 
-Tracing is enabled by default and uses the OTLP HTTP exporter. Set standard OpenTelemetry environment variables to send spans to Azure:
+Tracing is enabled by default and uses the OTLP HTTP exporter.
 
 - `OTEL_EXPORTER_OTLP_ENDPOINT`
 - `OTEL_EXPORTER_OTLP_HEADERS`
-- `SERVICE_NAME` (default: `slow-api`)
+- `SERVICE_NAME` (default: `aca-tracer`)
 - `PORT` (default: `8081`)
 
-For Azure Monitor via the OpenTelemetry Collector, set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector endpoint and pass the Azure connection string as an OTLP header if required by your setup.
+If you want to send data to Application Insights without the managed agent, run an OpenTelemetry Collector that uses the Azure Monitor exporter and point `OTEL_EXPORTER_OTLP_ENDPOINT` at the collector. The connection string belongs in the collector configuration, not in the app.
+
+### Local collector proxy
+
+This repo includes a minimal OpenTelemetry Collector config that accepts OTLP over HTTP and forwards traces to Application Insights.
+
+1. Ensure `APPLICATIONINSIGHTS_CONNECTION_STRING` is set (the collector uses it).
+2. Run the collector:
+
+```bash
+docker run --rm -p 4318:4318 \
+  -e APPLICATIONINSIGHTS_CONNECTION_STRING="$APPLICATIONINSIGHTS_CONNECTION_STRING" \
+  -v "$PWD/otel-collector-config.yaml:/etc/otelcol/config.yaml" \
+  otel/opentelemetry-collector-contrib:latest \
+  --config /etc/otelcol/config.yaml
+```
+
+3. Start the app with `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`.
 
 ## Usage
 
@@ -48,7 +65,7 @@ go run main.go
   "delay_ms": 220,
   "trace_id": "bdb0a8c2b900f1422a93ef6c1f38b0e6",
   "endpoint": "/api/orders/:id",
-  "service_name": "slow-api",
+  "service_name": "aca-tracer",
   "payload": {
     "order_id": 58311,
     "items": 3,
