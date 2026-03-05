@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	cryptorand "crypto/rand"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -221,12 +222,11 @@ func initTracer(ctx context.Context, serviceName string) (func(context.Context) 
 
 func contextWithParent(c *gin.Context) context.Context {
 	ctx := c.Request.Context()
-	if trace.SpanContextFromContext(ctx).IsValid() {
-		return ctx
-	}
-
 	traceIDHex := c.Query("trace_id")
 	if traceIDHex == "" {
+		if trace.SpanContextFromContext(ctx).IsValid() {
+			return ctx
+		}
 		return ctx
 	}
 
@@ -237,7 +237,7 @@ func contextWithParent(c *gin.Context) context.Context {
 
 	spanIDHex := c.Query("parent_span_id")
 	spanID, err := spanIDFromHexOrRandom(spanIDHex)
-	if err != nil {
+	if err != nil || !spanID.IsValid() {
 		return ctx
 	}
 
@@ -253,7 +253,11 @@ func contextWithParent(c *gin.Context) context.Context {
 
 func spanIDFromHexOrRandom(hexValue string) (trace.SpanID, error) {
 	if hexValue != "" {
-		return trace.SpanIDFromHex(hexValue)
+		spanID, err := trace.SpanIDFromHex(hexValue)
+		if err != nil || !spanID.IsValid() {
+			return trace.SpanID{}, err
+		}
+		return spanID, nil
 	}
 
 	for i := 0; i < 2; i++ {
@@ -264,5 +268,5 @@ func spanIDFromHexOrRandom(hexValue string) (trace.SpanID, error) {
 		}
 	}
 
-	return trace.SpanID{}, nil
+	return trace.SpanID{}, fmt.Errorf("failed to generate valid span id")
 }
